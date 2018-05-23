@@ -25,5 +25,5 @@ btestexplicit:
 clean:
 	rm -f *.o btest fshow ishow *~
 
-handin.tar: bits.c key.txt
-	tar cvf handin.tar bits.c key.txt
+handin.tar: bits.c
+	tar cvf handin.tar bits.c

@@ -165,40 +165,9 @@ unless (chdir($tmpdir)) {
 }
 
 # Untarring student submission
-system("tar -xvf handin.tar bits.c key.txt") == 0
+system("tar -xvf handin.tar bits.c") == 0
     or die "ERROR: Could not untar the submission : Ensure that both key.txt and bits.c are present and are named correctly\n";
 
-
-open my $file, '<', "key.txt";
-my $andrewid = <$file>;
-chomp $andrewid;
-close $file;
-
-if ($andrewid eq '<Enter your andrewid here>') {
-    die "ERROR: key.txt does not contain andrewid\n";
-}
-
-open(IN,"<", "key.txt") || die "cannot open input file:$!";
-my $lines = "";
-
-while (<IN>) {
- if ($. % 4 == 2){
-    $lines .= $_;
- }
-}
-
-chomp $lines;
-
-if ($lines eq '<Enter your unique code here>') {
-    die "ERROR: key.txt does not contain code from AssessMe\n";
-}
-
-$lines = trim($lines);
-my $codelen = length $lines;
-
-if($codelen != 32){
-  die "ERROR: The second line of key.txt should contain a legal code from AssessMe\n";
-}
 
 # Generate a zapped (for coding rules) version of bits.c. In this
 # zapped version of bits.c, any functions with illegal operators are
