@@ -35,11 +35,6 @@ sub usage {
     die "\n";
 }
 
-#
-# trim - used to trim spaces from the key
-#
-sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
-
 ##############
 # Main routine
 ##############
@@ -93,7 +88,7 @@ if ($opt_h) {
 }
 
 # The default input file is bits.c (change with -f)
-$infile = "handin.tar";
+$infile = "bits.c";
 $userid = "";
 
 #####
@@ -137,9 +132,9 @@ system("mkdir $tmpdir") == 0
     or die "$0: Could not make scratch directory $tmpdir.\n";
 
 # Copy the student's work to the scratch directory
-unless (system("cp $infile $tmpdir/handin.tar") == 0) { 
+unless (system("cp $infile $tmpdir/bits.c") == 0) { 
     clean($tmpdir);
-    die "$0: Could not copy file $infile to scratch directory $tmpdir. Make sure you have created a handin.tar\n";
+    die "$0: Could not copy file $infile to scratch directory $tmpdir.\n";
 }
 
 # Copy the various autograding files to the scratch directory
@@ -164,11 +159,7 @@ unless (chdir($tmpdir)) {
     die "$0: Could not change directory to $tmpdir.\n";
 }
 
-# Untarring student submission
-system("tar -xvf handin.tar bits.c") == 0
-    or die "ERROR: Could not untar the submission : Ensure that both key.txt and bits.c are present and are named correctly\n";
-
-
+#
 # Generate a zapped (for coding rules) version of bits.c. In this
 # zapped version of bits.c, any functions with illegal operators are
 # transformed to have empty function bodies.
@@ -285,15 +276,13 @@ while ($line = <INFILE>) {
     # Read and record a puzzle's name and score
     if ($inpuzzles) {
 	($blank, $c_points, $c_rating, $c_errors, $name) = split(/\s+/, $line);
-	if($c_rating != 0){
 	$puzzle_c_points{$name} = $c_points;
 	$puzzle_c_errors{$name} = $c_errors;
 	$puzzle_c_rating{$name} = $c_rating;
 	$puzzle_number{$name} = $puzzlecnt++;
 	$total_c_points += $c_points;
 	$total_c_rating += $c_rating;
- 	}  
-  }
+    }
 
 }
 close(INFILE);
