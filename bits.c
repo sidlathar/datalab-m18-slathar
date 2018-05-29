@@ -1,3 +1,4 @@
+#include "stdio.h"
 /*
  * CS:APP Data Lab
  *
@@ -87,7 +88,7 @@ EXAMPLES OF ACCEPTABLE CODING STYLE:
      /* exploit ability of shifts to compute powers of 2 */
      int result = (1 << x);
      result += 4;
-     return result;
+     return result; 
   }
 
 FLOATING POINT CODING RULES
@@ -202,8 +203,21 @@ int fitsBits(int x, int n) {
  *   Max ops: 16
  *   Rating: 3
  */
-int bitMask(int highbit, int lowbit) {
-  return 2;
+int bitMask(int highbit, int lowbit) 
+{
+  int one0 = (1 << 31);
+
+  int neg_one = one0 >> 31;
+
+  int lower_mask = neg_one << lowbit;
+  lower_mask = ~lower_mask;
+
+  int bit_mask = 1 << highbit;  //bit before leading bit zero
+
+  int res = (neg_one << highbit) & ~(bit_mask);
+  res = ~(res | lower_mask);
+
+  return res;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
@@ -213,8 +227,15 @@ int bitMask(int highbit, int lowbit) {
  *   Max ops: 20
  *   Rating: 3
  */
-int addOK(int x, int y) {
-  return 2;
+int addOK(int x, int y) 
+{
+  int same_sign = !(((x >> 31) & 0x1) ^ ((y >> 31) & 0x1));
+
+  int x_sign = (x >> 31) & 0x1;
+
+  int res_sign = ((x + y) >> 31) & 0x1;
+
+  return (!same_sign) | !(x_sign ^ res_sign);
 }
 /*
  * ezThreeFourths - multiplies by 3/4 rounding toward 0,
@@ -227,8 +248,20 @@ int addOK(int x, int y) {
  *   Max ops: 12
  *   Rating: 3
  */
-int ezThreeFourths(int x) {
-  return 2;
+int ezThreeFourths(int x) 
+{
+  printf("x: %d\n", x);
+
+  int three_times = (x << 1) + x;
+  printf("three_times: %d\n", three_times);
+
+  int res = (three_times  >> 2);
+  printf("res: %d\n", res);
+
+  // int foo = ((1 << 31) - 1) * 3 / 4;
+  // printf("FOO: %d\n", foo);
+
+  return res;
 }
 /* 
  * isGreater - if x > y  then return 1, else return 0 
@@ -237,9 +270,27 @@ int ezThreeFourths(int x) {
  *   Max ops: 24
  *   Rating: 3
  */
-int isGreater(int x, int y) {
-  return 2;
+int isGreater(int x, int y) 
+{
+  if(x == y) return 0; //CHANGE
+
+  int x_most_sig = (x >> 31) & 0x1;
+
+  int y_most_sig = (y >> 31) & 0x1;
+
+  int sub_sign = ((x + ~(y) + 1) >> 31) & 0x1;
+  
+  int same_sign = !(x_most_sig ^ y_most_sig);
+
+  //both neg
+  int both_neg = (x_most_sig) & (!sub_sign);
+  //both pos
+  int both_pos = (!x_most_sig) & (!sub_sign);
+
+  return (((!same_sign) & (!x_most_sig)) | (same_sign & ((both_neg) | (both_pos))));
 }
+
+
 //4"
 /*
  * bitCount - returns count of number of 1's in word
@@ -248,8 +299,45 @@ int isGreater(int x, int y) {
  *   Max ops: 40
  *   Rating: 4
  */
-int bitCount(int x) {
-  return 2;
+
+
+/*
+IGNORE
+11|10|10|01|01|01|00|01|01|10|01|10|00|01|00|10
+10|01|01|01|01|01|00|01|01|01|01|01|00|01|00|01|
+1001|0101
+*/
+
+int bitCount(int x) 
+{
+  int count = 0;
+
+  int every_other = (0x55 << 8) | (0x55);
+  every_other = every_other | (every_other << 16);
+
+  int every_2nd_other = (0x33 << 8) | (0x33);
+  every_2nd_other = every_2nd_other | (every_2nd_other << 16);
+
+  int every_4th_other = (0x0F << 8) | (0x0F);
+  every_4th_other = every_4th_other | (every_4th_other << 16);
+
+  int every_8th_other = (0xFF << 16 | 0xFF);
+
+  int every_16th_other = (0xFF << 8 | 0xFF);
+
+  //16 pairs of 2
+  count = (x & every_other) + ((x >> 1) & every_other); 
+
+  //8 pairs of 4
+  count = (count & every_2nd_other) + ((count >> 2) & every_2nd_other); 
+  //4 pairs of 8
+  count = (count & every_4th_other) + ((count >> 4) & every_4th_other); 
+  //2 pairs of 16
+  count = (count & every_8th_other) + ((count >> 8) & every_8th_other);
+  //final count (1 pair)
+  count = (count & every_16th_other) + ((count >> 16) & every_8th_other);
+  
+  return count;
 }
 /*
  * isPallindrome - Return 1 if bit pattern in x is equal to its mirror image
@@ -258,8 +346,11 @@ int bitCount(int x) {
  *   Max ops: 40
  *   Rating: 4
  */
-int isPallindrome(int x) {
-    return 2;
+int isPallindrome(int x) 
+{
+  int res = 0;
+
+
 }
 //float
 /* 
