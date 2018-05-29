@@ -248,6 +248,8 @@ int addOK(int x, int y)
  *   Max ops: 12
  *   Rating: 3
  */
+
+//Pg 105-106 "Idea of Bias"
 int ezThreeFourths(int x) 
 {
   int three_times = (x << 1) + x;
