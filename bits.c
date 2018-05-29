@@ -145,7 +145,7 @@ NOTES:
  *   Rating: 1
  */
 int tmax(void) {
-  return 2;
+  return ~(1 << 31);
 }
 /* 
  * bitNor - ~(x|y) using only ~ and & 
@@ -155,7 +155,7 @@ int tmax(void) {
  *   Rating: 1
  */
 int bitNor(int x, int y) {
-  return 2;
+  return (~x & ~y);
 }
 //2
 /* 
@@ -167,7 +167,7 @@ int bitNor(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-  return 2;
+  return (x >> (n << 3)) & 0xFF;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -178,7 +178,9 @@ int getByte(int x, int n) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int mask = (0xAA << 24) | (0xAA << 16) | (0xAA << 8) | 0xAA;
+
+  return !((x & mask) ^ mask);
 }
 /* 
  * fitsBits - return 1 if x can be represented as an 
