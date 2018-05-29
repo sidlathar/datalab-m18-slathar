@@ -250,17 +250,12 @@ int addOK(int x, int y)
  */
 int ezThreeFourths(int x) 
 {
-  printf("x: %d\n", x);
-
   int three_times = (x << 1) + x;
-  printf("three_times: %d\n", three_times);
 
-  int res = (three_times  >> 2);
-  printf("res: %d\n", res);
+  int sign = (three_times >> 31) & 0x1;
 
-  // int foo = ((1 << 31) - 1) * 3 / 4;
-  // printf("FOO: %d\n", foo);
-
+  int res = (three_times + ((3) & (sign + (sign << 1)))) >> 2;
+  
   return res;
 }
 /* 
@@ -272,22 +267,19 @@ int ezThreeFourths(int x)
  */
 int isGreater(int x, int y) 
 {
-  if(x == y) return 0; //CHANGE
+  if(x == y) return 0; //change
 
-  int x_most_sig = (x >> 31) & 0x1;
+  int ints_equal = !!(x^y);
 
-  int y_most_sig = (y >> 31) & 0x1;
+  int x_most_sig = (x >> 31);
 
-  int sub_sign = ((x + ~(y) + 1) >> 31) & 0x1;
+  int y_most_sig = (y >> 31);
+
+  int sub_sign = !(((x + ~(y) + 1) >> 31));
   
-  int same_sign = !(x_most_sig ^ y_most_sig);
+  int same_sign = (x_most_sig ^ y_most_sig);
 
-  //both neg
-  int both_neg = (x_most_sig) & (!sub_sign);
-  //both pos
-  int both_pos = (!x_most_sig) & (!sub_sign);
-
-  return (((!same_sign) & (!x_most_sig)) | (same_sign & ((both_neg) | (both_pos))));
+  return (ints_equal) & (((same_sign) & (!x_most_sig)) | ((!same_sign) & (sub_sign)));
 }
 
 
@@ -349,6 +341,7 @@ int bitCount(int x)
 int isPallindrome(int x) 
 {
   int res = 0;
+  return res;
 
 
 }
