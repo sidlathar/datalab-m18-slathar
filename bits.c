@@ -313,9 +313,10 @@ IGNORE
 
 int bitCount(int x) 
 {
-  int count = 0;
-
+  int count;
   int every_other, every_2nd_other, every_4th_other, every_8th_other, every_16th_other;
+
+  count = 0;
   every_other = (0x55 << 8) | (0x55);
   every_other |= (every_other << 16);
 
@@ -371,7 +372,7 @@ int isPallindrome(int x) //at 42 ops
   //xoring with upper 8 to see of they match
 
   rev = x & every_16th_other;
-  
+
   rev = (every_other      & (rev >> 1))  | ((rev   & every_other)      << 1);
   //printf("rev %x \n", rev);
   rev = (every_2nd_other  & (rev >> 2))  | ((rev & every_2nd_other)  << 2);
@@ -448,7 +449,7 @@ unsigned floatInt2Float(int x)
   frac = (tmp & 0x7FFFFFFF) >> 8;
 
   //rounding, checking last 8 bits
-  if ( ((tmp & 128) && (tmp & 127) > 0) || (tmp & 128) && (frac & 1) == 1)
+  if ((((tmp & 128) && (tmp & 127) > 0) || ((tmp & 128) && (frac & 1) == 1)))
   {
     frac = frac + 1;
   }
@@ -481,19 +482,24 @@ unsigned floatScale4(unsigned uf)
   //denormalized; close to 0
   else if(exp == 0)
   {
-    if(frac <= 0xFFFFF)
+    if(frac <= 0x100000)
     {
       frac = frac << 2;
     }
-    else if(frac <= 0x1FFFFF)
+    else if(frac <= 0x200000)
     {
-      frac = frac << 1;
+      frac = 0x800000 & (frac >> 1);
+      exp = exp + 1;
+    }
+    else if(frac <= 0x300000)
+    {
+      frac = 0xC00000 & (frac << 1);
       exp = exp + 1;
     }
     else
     {
       exp = exp + 2;
-      frac = (frac & 0x3FFFFF) << 1;
+      frac = (frac & 0xBFFFFF) << 1;
     }
   }
 
