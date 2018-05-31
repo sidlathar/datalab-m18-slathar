@@ -1,4 +1,4 @@
-#include "stdio.h"
+//#include "stdio.h"
 /*
  * CS:APP Data Lab
  *
@@ -191,8 +191,15 @@ int allOddBits(int x) {
  *   Max ops: 15
  *   Rating: 2
  */
-int fitsBits(int x, int n) {
-  return 2;
+int fitsBits(int x, int n) 
+{
+  int shift = 32 + (~n) + 1;
+
+  int tmp = x << shift;
+
+  int check = tmp >> shift;
+
+  return !(check ^ x);
 }
 //3
 /* 
@@ -207,16 +214,18 @@ int fitsBits(int x, int n) {
  */
 int bitMask(int highbit, int lowbit) 
 {
-  int one0 = (1 << 31);
+  int res, lower_mask, one0, neg_one, bit_mask;
+  
+  one0 = (1 << 31);
 
-  int neg_one = one0 >> 31;
+  neg_one = (one0 >> 31);
 
-  int lower_mask = neg_one << lowbit;
+  lower_mask = neg_one << lowbit;
   lower_mask = ~lower_mask;
 
-  int bit_mask = 1 << highbit;  //bit before leading bit zero
+  bit_mask = (1 << highbit);  //bit before leading bit zero
 
-  int res = (neg_one << highbit) & ~(bit_mask);
+  res = (neg_one << highbit) & ~(bit_mask);
   res = ~(res | lower_mask);
 
   return res;
@@ -271,8 +280,6 @@ int ezThreeFourths(int x)
  */
 int isGreater(int x, int y) 
 {
-  if(x == y) return 0; //change
-
   int ints_equal = !!(x^y);
 
   int x_most_sig = (x >> 31);
@@ -308,22 +315,23 @@ int bitCount(int x)
 {
   int count = 0;
 
-  int every_other = (0x55 << 8) | (0x55);
-  every_other = every_other | (every_other << 16);
+  int every_other, every_2nd_other, every_4th_other, every_8th_other, every_16th_other;
+  every_other = (0x55 << 8) | (0x55);
+  every_other |= (every_other << 16);
 
-  int every_2nd_other = (0x33 << 8) | (0x33);
-  every_2nd_other = every_2nd_other | (every_2nd_other << 16);
+  every_2nd_other = (0x33 << 8) | (0x33);
+  every_2nd_other |=  (every_2nd_other << 16);
 
-  int every_4th_other = (0x0F << 8) | (0x0F);
-  every_4th_other = every_4th_other | (every_4th_other << 16);
+  every_4th_other = (0x0F << 8) | (0x0F);
+  every_4th_other |= (every_4th_other << 16);
 
-  int every_8th_other = (0xFF << 16 | 0xFF);
+  every_8th_other = (0xFF << 16 | 0xFF);
 
-  int every_16th_other = (0xFF << 8 | 0xFF);
+  every_16th_other = (0xFF << 8 | 0xFF);
+
 
   //16 pairs of 2
   count = (x & every_other) + ((x >> 1) & every_other); 
-
   //8 pairs of 4
   count = (count & every_2nd_other) + ((count >> 2) & every_2nd_other); 
   //4 pairs of 8
@@ -344,10 +352,40 @@ int bitCount(int x)
  */
 int isPallindrome(int x) 
 {
-  int res = 0;
+  //Using same logic as bitCount
+
+  int every_other, every_2nd_other, every_4th_other;
+  int every_8th_other, every_16th_other, rev, res;
+  
+  every_other = (0x55 << 8) | (0x55);
+  every_other |= (every_other << 16);
+
+  every_2nd_other = (0x33 << 8) | (0x33);
+  every_2nd_other |=  (every_2nd_other << 16);
+
+  every_4th_other = (0x0F << 8) | (0x0F);
+  every_4th_other |= (every_4th_other << 16);
+
+  every_8th_other = (0xFF << 16 | 0xFF);
+
+  every_16th_other = (0xFF << 8 | 0xFF);
+
+  //reversing bit pattern using same logic as bitcount, | ing istead of add
+  //to preseve bits
+  
+  rev = (every_other      & (x >> 1))        | ((x   & every_other)      << 1);
+  //printf("rev %x \n", rev);
+  rev = (every_2nd_other  & (rev >> 2))  | ((rev & every_2nd_other)  << 2);
+  //printf("rev %x \n", rev);
+  rev = (every_4th_other  & (rev >> 4))  | ((rev & every_4th_other)  << 4);
+  //printf("rev %x \n", rev);
+  rev = (every_8th_other  & (rev >> 8))  | ((rev & every_8th_other)  << 8);
+  //printf("rev %x \n", rev);
+  rev = (every_16th_other & (rev >> 16)) | ((rev & every_16th_other) << 16);
+  //printf("rev %x \n", rev);
+
+  res = !(rev ^ x);
   return res;
-
-
 }
 //float
 /* 
@@ -361,8 +399,15 @@ int isPallindrome(int x)
  *   Max ops: 10
  *   Rating: 2
  */
-unsigned floatNegate(unsigned uf) {
- return 2;
+unsigned floatNegate(unsigned uf) 
+{
+  int mask_neg = 0x80000000;
+  int nan_exp = (uf >> 23) & 0xFF;
+  int frac =(uf & 0x7FFFFF);
+
+  if(nan_exp == 0xFF && frac != 0) return uf;
+  
+  return uf ^ mask_neg;
 }
 /* 
  * floatInt2Float - Return bit-level equivalent of expression (float) x
@@ -373,8 +418,45 @@ unsigned floatNegate(unsigned uf) {
  *   Max ops: 30
  *   Rating: 4
  */
-unsigned floatInt2Float(int x) {
-  return 2;
+unsigned floatInt2Float(int x) 
+{
+  int sign;
+  int frac;
+  int index;
+  int tmp;
+  
+  sign = (x >> 31) & 0x1;
+  index = 31;
+  tmp = x;
+
+  if(tmp == 0)
+  {
+    return 0;
+  }
+
+  if(tmp < 0)
+  {
+    tmp = -tmp;
+  }
+
+  while(!(tmp >> index)) //check for leading zeros
+  {
+    index = index - 1;
+  }
+
+  //printf("index %d \n", index);
+
+  tmp = tmp << (31 - index);  //remove leading zeros
+  index = index + 127;    //add bias to index to get exp
+  frac = (tmp & 0x7FFFFFFF) >> 8;
+
+  //rounding, checking last 8 bits
+  if ( ((tmp & 0x80) && (tmp & 127) > 0) || (tmp & 128) && (frac & 1) == 1)
+  {
+    frac = frac + 1;
+  }
+
+  return (sign << 31) + (index << 23) + frac;
 }
 /* 
  * floatScale4 - Return bit-level equivalent of expression 4*f for
@@ -387,6 +469,53 @@ unsigned floatInt2Float(int x) {
  *   Max ops: 30
  *   Rating: 4
  */
-unsigned floatScale4(unsigned uf) {
-    return 2;
+unsigned floatScale4(unsigned uf) 
+{
+  unsigned sign = uf >> 31;
+  unsigned exp = (uf >> 23) & 0xFF;
+  unsigned frac =(uf & 0x7FFFFF);
+
+  //NaN
+  if(exp == 0xFF) 
+  {
+    return uf;
+  }
+
+  //denormalized; close to 0
+  else if(exp == 0)
+  {
+    if(frac <= 0xFFFFF)
+    {
+      frac = frac << 2;
+    }
+    else if(frac <= 0x1FFFFF)
+    {
+      frac = frac << 1;
+      exp = exp + 1;
+    }
+    else
+    {
+      exp = exp + 2;
+      frac = (frac & 0x3FFFFF) << 1;
+    }
+  }
+
+  //normalized
+  else
+  {
+    if(exp < 0xFD)
+    {
+      exp += 2;
+    }
+    else
+    {
+      exp = 0xFF;
+      frac = 0;
+    }
+  }
+
+  //printf("num %x \n", uf);
+  //printf("frac %x \n", frac);
+
+  return (sign << 31) | (exp << 23) | frac;
 }
