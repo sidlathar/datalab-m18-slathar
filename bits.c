@@ -339,7 +339,7 @@ int bitCount(int x)
   //2 pairs of 16
   count = (count & every_8th_other) + ((count >> 8) & every_8th_other);
   //final count (1 pair)
-  count = (count & every_16th_other) + ((count >> 16) & every_8th_other);
+  count = (count & every_16th_other) + ((count >> 16));
   
   return count;
 }
@@ -350,30 +350,29 @@ int bitCount(int x)
  *   Max ops: 40
  *   Rating: 4
  */
-int isPallindrome(int x) 
+int isPallindrome(int x) //at 42 ops
 {
   //Using same logic as bitCount
 
   int every_other, every_2nd_other, every_4th_other;
   int every_8th_other, every_16th_other, rev, res;
-  
+
   every_other = (0x55 << 8) | (0x55);
-  every_other |= (every_other << 16);
 
   every_2nd_other = (0x33 << 8) | (0x33);
-  every_2nd_other |=  (every_2nd_other << 16);
 
   every_4th_other = (0x0F << 8) | (0x0F);
-  every_4th_other |= (every_4th_other << 16);
 
   every_8th_other = (0xFF << 16 | 0xFF);
 
   every_16th_other = (0xFF << 8 | 0xFF);
 
-  //reversing bit pattern using same logic as bitcount, | ing istead of add
-  //to preseve bits
+  //reversing lower 16 bit pattern using same logic as bitcount
+  //xoring with upper 8 to see of they match
+
+  rev = x & every_16th_other;
   
-  rev = (every_other      & (x >> 1))        | ((x   & every_other)      << 1);
+  rev = (every_other      & (rev >> 1))  | ((rev   & every_other)      << 1);
   //printf("rev %x \n", rev);
   rev = (every_2nd_other  & (rev >> 2))  | ((rev & every_2nd_other)  << 2);
   //printf("rev %x \n", rev);
@@ -381,10 +380,8 @@ int isPallindrome(int x)
   //printf("rev %x \n", rev);
   rev = (every_8th_other  & (rev >> 8))  | ((rev & every_8th_other)  << 8);
   //printf("rev %x \n", rev);
-  rev = (every_16th_other & (rev >> 16)) | ((rev & every_16th_other) << 16);
-  //printf("rev %x \n", rev);
 
-  res = !(rev ^ x);
+  res = !(((x >> 16) & every_16th_other) ^ rev);
   return res;
 }
 //float
@@ -451,7 +448,7 @@ unsigned floatInt2Float(int x)
   frac = (tmp & 0x7FFFFFFF) >> 8;
 
   //rounding, checking last 8 bits
-  if ( ((tmp & 0x80) && (tmp & 127) > 0) || (tmp & 128) && (frac & 1) == 1)
+  if ( ((tmp & 128) && (tmp & 127) > 0) || (tmp & 128) && (frac & 1) == 1)
   {
     frac = frac + 1;
   }
